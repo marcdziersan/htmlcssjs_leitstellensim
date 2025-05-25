@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kreisleitstelle Mettmann</title>
+
+  <!-- Chart.js für Statistik -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Style -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>🚒 Kreisleitstelle Mettmann</h1>
+  <div id="score">Punkte: 0</div>
+
+  <!-- Fahrzeug-Suchfeld -->
+  <input type="text" id="vehicleSearch" placeholder="🔍 Suche Fahrzeug-ID oder Wache..." style="width: 300px; padding: 6px; margin: 20px auto; display: block;">
+
+  <!-- Fahrzeuge -->
+  <h2>Fahrzeuge</h2>
+  <div id="vehicle-container"></div>
+
+  <!-- Statistik (Chart.js) -->
+  <h2>Statistik Fahrzeugverfügbarkeit</h2>
+  <canvas id="statistikChart" width="600" height="300"></canvas>
+
+  <!-- Einsätze -->
+  <h2>Aktive Einsätze</h2>
+  <div id="incidents-container"></div>
+
+  <!-- Historie -->
+  <h2>Einsatzhistorie</h2>
+  <div id="history"></div>
+
+  <!-- Daten & Script -->
+  <script src="data/wachen.js"></script>
+  <script src="data/einsatzarten.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
