@@ -1,18 +1,22 @@
 window.EINSATZARTEN = [
   // BRAND (Priorität 1–2)
-  { title: "Wohnungsbrand", required: ["LF", "ELW"], priority: 1 },
-  { title: "Dachstuhlbrand", required: ["LF", "DLK", "ELW"], priority: 1 },
-  { title: "Waldbrand", required: ["TLF", "LF", "ELW"], priority: 1 },
-  { title: "Kellerbrand", required: ["LF", "ELW"], priority: 2 },
+  { title: "Wohnungsbrand", required: ["HLF", "ELW"], priority: 1 },
+  { title: "Dachstuhlbrand", required: ["HLF", "DLK", "ELW"], priority: 1 },
+  { title: "Waldbrand", required: ["TLF", "HLF", "ELW", "SW", "Kdow"], priority: 1 },
+  { title: "Kellerbrand", required: ["HLF", "ELW"], priority: 2 },
   { title: "Fahrzeugbrand", required: ["LF"], priority: 2 },
   { title: "Mülltonnenbrand", required: ["LF"], priority: 3 },
   { title: "Brandmeldealarm", required: ["LF"], priority: 2 },
   { title: "Heckenbrand", required: ["LF"], priority: 3 },
   { title: "Garagenbrand", required: ["LF", "RW"], priority: 2 },
-  { title: "Gewerbebrand", required: ["LF", "DLK", "ELW", "RW"], priority: 1 },
-  { title: "Feuer in Lagerhalle", required: ["LF", "DLK", "TLF", "ELW"], priority: 1 },
-  { title: "Chlorgeruch Schwimmbad", required: ["LF", "ELW", "RW"], priority: 1 },
-  { title: "Brand Landwirtschaft", required: ["TLF", "LF", "RW", "ELW"], priority: 1 },
+  { title: "Gewerbebrand", required: ["HLF", "DLK", "ELW", "RW"], priority: 1 },
+  { title: "Feuer in Lagerhalle", required: ["HLF", "DLK", "TLF", "ELW"], priority: 1 },
+  { title: "Chlorgeruch Schwimmbad", required: ["HLF", "ELW", "RW"], priority: 1 },
+  { title: "Brand Landwirtschaft", required: ["TLF", "HLF", "RW", "ELW"], priority: 1 },
+  // Neue Brand-Szenarien
+  { title: "Brennender Stromkasten", required: ["ELW", "TLF"], priority: 2 },
+  { title: "Rauchentwicklung Küche", required: ["LF"], priority: 2 },
+  { title: "Heizungsbrand", required: ["LF", "ELW"], priority: 1 },
 
   // TECHNISCHE HILFELEISTUNG (THL)
   { title: "Verkehrsunfall", required: ["RW", "LF"], priority: 2 },
@@ -21,18 +25,24 @@ window.EINSATZARTEN = [
   { title: "Person in Aufzug", required: ["RW"], priority: 2 },
   { title: "Baum auf Straße", required: ["RW", "LF"], priority: 2 },
   { title: "Baum auf Haus", required: ["RW", "DLK"], priority: 2 },
-  { title: "Wasser im Keller", required: ["LF"], priority: 3 },
+  { title: "Wasser im Keller", required: ["HLF"], priority: 3 },
   { title: "Türöffnung akut", required: ["RW", "RTW"], priority: 1 },
   { title: "Ölspur", required: ["RW"], priority: 3 },
-  { title: "Gasgeruch", required: ["LF", "ELW"], priority: 1 },
+  { title: "Gasgeruch", required: ["HLF", "ELW"], priority: 1 },
   { title: "Sturmschaden Dach", required: ["RW", "DLK"], priority: 2 },
-  { title: "Technische Rettung Industrie", required: ["RW", "LF", "ELW"], priority: 1 },
+  { title: "Technische Rettung Industrie", required: ["RW", "HLF", "ELW"], priority: 1 },
   { title: "Unterstützung Rettungsdienst", required: ["RW"], priority: 2 },
   { title: "Tragehilfe", required: ["RW", "RTW"], priority: 2 },
   { title: "Tier in Not", required: ["RW"], priority: 3 },
   { title: "Höhenrettung", required: ["DLK", "ELW"], priority: 2 },
   { title: "Gefahrgut klein", required: ["RW", "ELW"], priority: 2 },
-  { title: "Gefahrgut groß", required: ["LF", "RW", "ELW", "TLF"], priority: 1 },
+  { title: "Gefahrgut groß", required: ["HLF", "RW", "ELW", "TLF"], priority: 1 },
+  // Neue THL-Szenarien
+  { title: "Person unterm Fahrzeug", required: ["RW", "DLK", "MTF"], priority: 1 },
+  { title: "Verkehrsabsicherung Unfallstelle", required: ["MZF", "RW"], priority: 3 },
+  { title: "Sturmeinsatz (umgestürzte Bäume)", required: ["TLF", "LF", "KLF"], priority: 2 },
+  { title: "Logistikeinsatz", required: ["Logistik", "MTW"], priority: 3 },
+  { title: "Sandsackaktion", required: ["Sandsack", "GW-W"], priority: 3 },
 
   // RETTUNGSDIENST (RD)
   { title: "Herzinfarkt", required: ["RTW", "NEF"], priority: 1 },
@@ -51,5 +61,10 @@ window.EINSATZARTEN = [
   { title: "Fieber Kind", required: ["RTW"], priority: 3 },
   { title: "Schnittverletzung", required: ["RTW"], priority: 2 },
   { title: "Schlaganfall", required: ["RTW", "NEF"], priority: 1 },
-  { title: "Verkehrsunfall (nur RD)", required: ["RTW", "NEF"], priority: 2 }
+  { title: "Verkehrsunfall (nur RD)", required: ["RTW", "NEF"], priority: 2 },
+  // Neue RD-Szenarien
+  { title: "Asthmaanfall Kind", required: ["RTW", "NEF"], priority: 1 },
+  { title: "Atemnot", required: ["RTW", "NEF"], priority: 1 },
+  { title: "Verletzung durch Stromschlag", required: ["RTW", "NEF", "ABC"], priority: 1 },
+  { title: "Seelevel-Notruf", required: ["RTW"], priority: 2 }
 ];

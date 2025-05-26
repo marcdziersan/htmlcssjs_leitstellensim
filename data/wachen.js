@@ -3,31 +3,31 @@ window.WACHEN = [
     stadt: "Mettmann",
     name: "Wache Mettmann BF",
     typ: "BF",
-    fahrzeuge: ["LF", "RW", "ELW", "DLK", "RTW", "NEF"]
+    fahrzeuge: ["HLF", "HLF", "LF", "LF", "TLF", "DLK", "RW", "KEF", "SW", "MZF", "PKW", "MTF", "RTW", "RTW", "NEF", "NEF"]
   },
   {
     stadt: "Erkrath",
     name: "FF Erkrath",
     typ: "FF",
-    fahrzeuge: ["LF", "TLF", "ELW", "RTW"]
+    fahrzeuge: ["LF", "HLF", "TLF", "ELW", "RTW"]
   },
   {
     stadt: "Hilden",
     name: "FF Hilden",
     typ: "FF",
-    fahrzeuge: ["LF", "RW", "DLK", "RTW", "NEF"]
+    fahrzeuge: ["LF", "RW", "DLK", "RTW", "RTW", "KTW", "NEF", "HLF", "HLF", "ELW", "SW", "KLF", "Kdow", "GW-W"]
   },
   {
     stadt: "Ratingen",
     name: "Wache Ratingen BF",
     typ: "BF",
-    fahrzeuge: ["LF", "DLK", "ELW", "RW", "TLF", "RTW", "NEF", "KTW"]
+    fahrzeuge: ["RTW", "RTW", "NEF", "MTW", "KdoW", "AB-Einsatzleitung", "ELW"]
   },
   {
     stadt: "Velbert",
     name: "Wache Velbert BF",
     typ: "BF",
-    fahrzeuge: ["LF", "RW", "TLF", "DLK", "ELW", "RTW", "NEF"]
+    fahrzeuge: ["AB-Gefahrgut", "ABC", "Mulde", "Nachschub", "Hochvolt", "Sandsack", "V-Dekon", "Boot", "Ölschaden", "Sirene", "Logistik", "LF", "RTW", "RTW", "RTW", "RTW", "RTW", "RTW", "KTW", "KTW", "KTW"]
   },
   {
     stadt: "Langenfeld",

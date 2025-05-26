@@ -1,5 +1,11 @@
 class Leitstelle {
   constructor() {
+    this.ANNUAL_INCIDENTS = 16000;
+this.HOURS_PER_YEAR   = 365 * 24;
+this.RATE_PER_HOUR    = this.ANNUAL_INCIDENTS / this.HOURS_PER_YEAR;
+this.WINDOW_MINUTES   = 15;
+this.WINDOW_HOURS     = this.WINDOW_MINUTES / 60;
+this.MAX_PER_WINDOW   = Math.ceil(this.RATE_PER_HOUR * this.WINDOW_HOURS);
     this.score = 0;
     this.vehicles = [];
     this.incidents = [];
@@ -49,39 +55,47 @@ class Leitstelle {
   }
 
   autoGenerateIncident() {
-    if (this.incidents.filter(i => i.active).length < 5) {
-      this.generateIncident();
-    }
+  // Maximal 4 parallele Viertelstunden-Fenster im System
+  if (this.incidents.filter(i => i.active).length < this.MAX_PER_WINDOW * 4) {
+    this.generateIncident();
   }
+}
 
-  generateIncident() {
-    const now = Date.now();
-    const fifteenMinAgo = now - (15 * 60 * 1000);
-    this.einsatzTimestamps = this.einsatzTimestamps.filter(ts => ts > fifteenMinAgo);
+generateIncident() {
+  const now = Date.now();
 
-    if (this.einsatzTimestamps.length >= 4) {
-      console.log("Maximale Einsätze erreicht (4/15min)");
-      return;
-    }
+  // 1) Fensterstart für 15-Minuten-Block berechnen
+  const windowStart = now - this.WINDOW_MINUTES * 60 * 1000;
+  this.einsatzTimestamps = this.einsatzTimestamps.filter(ts => ts > windowStart);
 
-    this.einsatzTimestamps.push(now);
-
-    const template = EINSATZARTEN[Math.floor(Math.random() * EINSATZARTEN.length)];
-    const stadt = WACHEN[Math.floor(Math.random() * WACHEN.length)].stadt;
-
-    this.incidents.push({
-      id: ++this.incidentId,
-      title: template.title,
-      stadt,
-      required: [...template.required],
-      assigned: [],
-      duration: 10 + Math.floor(Math.random() * 10),
-      priority: template.priority,
-      active: true
-    });
-
-    this.renderIncidents();
+  // 2) Rate-Limit prüfen: max. Einsätze pro Block
+  if (this.einsatzTimestamps.length >= this.MAX_PER_WINDOW) {
+    console.log(`Maximale Einsätze erreicht (${this.MAX_PER_WINDOW}/${this.WINDOW_MINUTES} Min.)`);
+    return;
   }
+  this.einsatzTimestamps.push(now);
+
+  // 3) Zufällige Einsatzvorlage & Stadt wählen
+  const template = EINSATZARTEN[Math.floor(Math.random() * EINSATZARTEN.length)];
+  const stadt    = WACHEN[Math.floor(Math.random() * WACHEN.length)].stadt;
+
+  // 4) Einsatzobjekt anlegen, mit startTime für Countdown
+  this.incidents.push({
+    id: ++this.incidentId,
+    title:    template.title,
+    stadt,
+    required: [...template.required],
+    assigned: [],
+    duration: 10 + Math.floor(Math.random() * 10), // in Sekunden
+    priority: template.priority,
+    active:   true,
+    startTime: now                             // merken, wann Einsatz begonnen hat
+  });
+
+  // 5) UI aktualisieren
+  this.renderIncidents();
+}
+
 
   assignVehicle(incident) {
     const now = Date.now();
@@ -114,7 +128,7 @@ class Leitstelle {
 
           setTimeout(() => {
             this.updateVehicleStatus(vehicle, "im Einsatz");
-            vehicle.busyUntil = now + incident.duration * 1000;
+            vehicle.busyUntil = now + incident.duration * 1000 + delay;
             vehicle.status = "busy";
 
             setTimeout(() => {
@@ -160,75 +174,96 @@ class Leitstelle {
     this.renderHistory();
   }
 
-  renderVehicles() {
-    const searchTerm = document.getElementById("vehicleSearch")?.value?.toLowerCase() || "";
-    this.vehicleContainer.innerHTML = "";
+renderVehicles() {
+  const now = Date.now();
+  const searchTerm = document.getElementById("vehicleSearch")?.value?.toLowerCase() || "";
+  this.vehicleContainer.innerHTML = "";
 
-    const grouped = {};
-    this.vehicles.forEach(v => {
-      if (!grouped[v.stadt]) grouped[v.stadt] = [];
-      grouped[v.stadt].push(v);
-    });
+  // Gruppe nach Stadt
+  const grouped = {};
+  this.vehicles.forEach(v => {
+    if (!grouped[v.stadt]) grouped[v.stadt] = [];
+    grouped[v.stadt].push(v);
+  });
 
-    Object.entries(grouped).forEach(([stadt, fahrzeuge]) => {
-      const filtered = fahrzeuge.filter(v =>
-        v.id.toLowerCase().includes(searchTerm) ||
-        v.wache.toLowerCase().includes(searchTerm)
-      );
+  Object.entries(grouped).forEach(([stadt, fahrzeuge]) => {
+    const filtered = fahrzeuge.filter(v =>
+      v.id.toLowerCase().includes(searchTerm) ||
+      v.wache.toLowerCase().includes(searchTerm)
+    );
 
-      const total = filtered.length;
-      const available = filtered.filter(v => v.status === "frei" && this.isPersonnelAvailable(v)).length;
+    const total     = filtered.length;
+    const available = filtered.filter(v => v.status === "frei" && this.isPersonnelAvailable(v)).length;
+    if (total === 0) return;
 
-      if (total === 0) return;
+    // Accordion-Gruppe
+    const groupDiv = document.createElement("div");
+    groupDiv.className = "vehicle-group";
 
-      const groupDiv = document.createElement("div");
-      groupDiv.className = "vehicle-group";
+    const header = document.createElement("div");
+    header.className = "accordion-header";
+    header.textContent = `${stadt} – ${available} von ${total} verfügbar`;
+    groupDiv.appendChild(header);
 
-      const header = document.createElement("div");
-      header.className = "accordion-header";
-      header.textContent = `${stadt} – ${available} von ${total} verfügbar`;
-      groupDiv.appendChild(header);
+    const body = document.createElement("div");
+    body.className = "accordion-body";
 
-      const body = document.createElement("div");
-      body.className = "accordion-body";
+    filtered.forEach(v => {
+      const div = document.createElement("div");
+      div.className = "vehicle" + (v.status !== "frei" ? " busy" : "");
 
-      filtered.forEach(v => {
-        const div = document.createElement("div");
-        div.className = "vehicle" + (v.status !== "frei" ? " busy" : "");
-        div.innerHTML = `
-          <strong>${v.id}</strong><br>
-          Typ: ${v.type} (${v.org})<br>
-          Wache: ${v.wache}<br>
-          Status: ${v.status}<br>
-          ${
-            this.isPersonnelAvailable(v)
-              ? "👨‍🚒 Personal verfügbar"
-              : "<span class='no-personnel'>❌ Keine Besatzung</span>"
-          }
+      // Berechne Restzeit und Progress
+      let extra = "";
+      if (v.status === "busy" && v.busyUntil) {
+        const msLeft    = Math.max(0, v.busyUntil - now);
+        const secLeft   = Math.ceil(msLeft / 1000);
+        const totalMs   = (v.busyUntil - (v.startBusyTime || (now - msLeft)));
+        const pctDone   = Math.min(100, ((totalMs - msLeft) / totalMs) * 100);
+        extra = `
+          <br><small>🕒 Frei in: ${secLeft}s</small>
+          <div class="progress">
+            <div class="bar" style="width: ${pctDone}%;"></div>
+          </div>
         `;
-        body.appendChild(div);
-      });
+      }
 
-      header.addEventListener("click", () => {
-        body.classList.toggle("open");
-      });
-
-      groupDiv.appendChild(body);
-      this.vehicleContainer.appendChild(groupDiv);
+      div.innerHTML = `
+        <strong>${v.id}</strong><br>
+        Typ: ${v.type} (${v.org})<br>
+        Wache: ${v.wache}<br>
+        Status: ${v.status}${extra}<br>
+        ${
+          this.isPersonnelAvailable(v)
+            ? "👨‍🚒 Personal verfügbar"
+            : "<span class='no-personnel'>❌ Keine Besatzung</span>"
+        }
+      `;
+      body.appendChild(div);
     });
 
-    this.renderStadtStatistik();
-  }
+    header.addEventListener("click", () => body.classList.toggle("open"));
+    groupDiv.appendChild(body);
+    this.vehicleContainer.appendChild(groupDiv);
+  });
 
-  renderIncidents() {
-    this.incidentsContainer.innerHTML = "";
-    this.incidents.filter(i => i.active).forEach(incident => {
+  this.renderStadtStatistik();
+}
+
+renderIncidents() {
+  this.incidentsContainer.innerHTML = "";
+
+  this.incidents
+    .filter(i => i.active)
+    .forEach(incident => {
+      // DOM-Element anlegen
       const div = document.createElement("div");
       const missing = incident.required.filter(r => !incident.assigned.includes(r));
-      const color = this.getPriorityColor(incident.priority);
+      const color   = this.getPriorityColor(incident.priority);
 
       div.className = "incident";
       div.style.borderLeft = `8px solid ${color}`;
+
+      // Basis-HTML, inkl. Platzhalter für Countdown
       div.innerHTML = `
         <strong>${incident.title}</strong><br>
         Ort: ${incident.stadt}<br>
@@ -236,12 +271,36 @@ class Leitstelle {
         Benötigt: ${incident.required.join(", ")}<br>
         Zugewiesen: ${incident.assigned.join(", ") || "-"}<br>
         <button ${missing.length === 0 ? "disabled" : ""}>Fahrzeug zuweisen</button>
+        <div class="incident-timer"></div>
       `;
 
+      // Fahrzeug zuweisen
       div.querySelector("button").onclick = () => this.assignVehicle(incident);
+
+      // Timer-Element referenzieren
+      const timerEl = div.querySelector(".incident-timer");
+
+      // Wenn bereits alle Fahrzeuge zugewiesen sind, starte Countdown
+      if (missing.length === 0) {
+        const totalMs = incident.duration * 1000;
+        const endTime = incident.startTime + totalMs;
+
+        // Initiale Anzeige
+        const updateTimer = () => {
+          const now    = Date.now();
+          const msLeft = Math.max(0, endTime - now);
+          const sec    = Math.ceil(msLeft / 1000);
+          timerEl.textContent = `⏱ Läuft noch: ${sec}s`;
+          if (msLeft <= 0) clearInterval(intervalId);
+        };
+
+        updateTimer();
+        const intervalId = setInterval(updateTimer, 500);
+      }
+
       this.incidentsContainer.appendChild(div);
     });
-  }
+}
 
   renderHistory() {
     this.historyContainer.innerHTML = "";
