@@ -16,22 +16,3 @@ Basierend auf einer jährlichen Einsatzzahl von **16.000** Einsätzen und einer 
 | Wülfrath            |     20 687 |               4,12 |                    0,66 |
 
 ---
-
-## Berechnungsschritte
-
-1. **Anteil einer Stadt**  
-   \[
-     \text{Anteil} = \frac{\text{Bevölkerung Stadt}}{502\,114}
-   \]
-
-2. **Stundensatz**  
-   Da wir im Mittel 4 Einsätze pro 15 Minuten erwarten, entspricht das  
-   \[
-     4 \times \frac{60}{15} = 16 \text{ Einsätzen pro Stunde}.
-   \]
-
-3. **Einsätze pro Stadt und Stunde**  
-   \[
-     \text{Einsätze/Stunde Stadt}
-     = 16 \times \text{Anteil}
-   \]
