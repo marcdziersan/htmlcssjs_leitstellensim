@@ -255,15 +255,12 @@ renderIncidents() {
   this.incidents
     .filter(i => i.active)
     .forEach(incident => {
-      // DOM-Element anlegen
       const div = document.createElement("div");
       const missing = incident.required.filter(r => !incident.assigned.includes(r));
       const color   = this.getPriorityColor(incident.priority);
 
       div.className = "incident";
       div.style.borderLeft = `8px solid ${color}`;
-
-      // Basis-HTML, inkl. Platzhalter für Countdown
       div.innerHTML = `
         <strong>${incident.title}</strong><br>
         Ort: ${incident.stadt}<br>
@@ -274,18 +271,16 @@ renderIncidents() {
         <div class="incident-timer"></div>
       `;
 
-      // Fahrzeug zuweisen
       div.querySelector("button").onclick = () => this.assignVehicle(incident);
-
-      // Timer-Element referenzieren
       const timerEl = div.querySelector(".incident-timer");
 
-      // Wenn bereits alle Fahrzeuge zugewiesen sind, starte Countdown
       if (missing.length === 0) {
         const totalMs = incident.duration * 1000;
         const endTime = incident.startTime + totalMs;
 
-        // Initiale Anzeige
+        // Deklariere intervalId VOR dem ersten Aufruf von updateTimer
+        let intervalId;
+
         const updateTimer = () => {
           const now    = Date.now();
           const msLeft = Math.max(0, endTime - now);
@@ -295,7 +290,7 @@ renderIncidents() {
         };
 
         updateTimer();
-        const intervalId = setInterval(updateTimer, 500);
+        intervalId = setInterval(updateTimer, 500);
       }
 
       this.incidentsContainer.appendChild(div);
