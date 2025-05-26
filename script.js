@@ -120,35 +120,42 @@ generateIncident() {
 }
 
 
-  assignVehicle(incident) {
+assignVehicle(incident) {
   const now = Date.now();
 
   for (let req of incident.required) {
     if (!incident.assigned.includes(req)) {
+      // Fahrzeuge nach Status, Stadt, Besatzung & Technik filtern
       const local = this.vehicles.filter(v =>
         v.type === req &&
         v.status === "frei" &&
-        v.stadt === incident.stadt
+        v.stadt === incident.stadt &&
+        this.isPersonnelAvailable(v) &&
+        !v.wartungFaellig &&
+        (v.tankstand ?? 100) > 20
       );
 
       const remote = this.vehicles.filter(v =>
         v.type === req &&
         v.status === "frei" &&
-        v.stadt !== incident.stadt
+        v.stadt !== incident.stadt &&
+        this.isPersonnelAvailable(v) &&
+        !v.wartungFaellig &&
+        (v.tankstand ?? 100) > 20
       );
 
-      const vehicle = local.find(v => this.isPersonnelAvailable(v)) ||
-                      remote.find(v => this.isPersonnelAvailable(v));
+      // Nächstes verfügbares Fahrzeug
+      const vehicle = local[0] || remote[0];
 
+      // Falls keine Besatzung: Pager-Alarm für FF
       const unbesetzt = local.concat(remote).find(v => !this.isPersonnelAvailable(v) && !v.alarmiert);
-
-      // ⏰ FF tagsüber → Alarmierung
       if (!vehicle && unbesetzt) {
         this.alarmiereFF(unbesetzt);
         alert(`${unbesetzt.id} wurde alarmiert! Personal wird nachalarmiert.`);
         return;
       }
 
+      // Fahrzeug verfügbar und einsatzbereit
       if (vehicle) {
         incident.assigned.push(req);
 
@@ -161,23 +168,26 @@ generateIncident() {
 
         setTimeout(() => {
           this.updateVehicleStatus(vehicle, "im Einsatz");
+
           vehicle.busyUntil = now + incident.duration * 1000 + delay;
           vehicle.status = "busy";
 
+          // Einsatzende – zurück zur Wache oder Wartung
           setTimeout(() => {
             vehicle.einsatzZaehler = (vehicle.einsatzZaehler || 0) + 1;
+            vehicle.tankstand = Math.max(0, (vehicle.tankstand ?? 100) - 10);
 
             if (vehicle.einsatzZaehler >= 10) {
               vehicle.status = "wartung";
               vehicle.wartungFaellig = true;
 
-              // 60 Sekunden Wartung simulieren
+              // 🔧 Wartung für 60 Sekunden simulieren
               setTimeout(() => {
                 vehicle.status = "frei";
                 vehicle.einsatzZaehler = 0;
                 vehicle.wartungFaellig = false;
                 this.renderVehicles();
-              }, 60000); // 1 Minute
+              }, 60000);
             } else {
               vehicle.status = "frei";
             }
@@ -208,8 +218,6 @@ generateIncident() {
   alert("Keine verfügbaren Fahrzeuge – Einsatz bleibt offen!");
 }
 
-
-
   updateVehicleStatus(vehicle, status) {
     vehicle.status = status;
     this.renderVehicles();
@@ -230,7 +238,6 @@ renderVehicles() {
   const searchTerm = document.getElementById("vehicleSearch")?.value?.toLowerCase() || "";
   this.vehicleContainer.innerHTML = "";
 
-  // Fahrzeuge nach Stadt gruppieren
   const grouped = {};
   this.vehicles.forEach(v => {
     if (!grouped[v.stadt]) grouped[v.stadt] = [];
@@ -281,7 +288,7 @@ renderVehicles() {
         extra += `<br><small>🔧 In Wartung...</small>`;
       }
 
-      // 🕒 Fortschritt
+      // 🕒 Einsatzfortschritt
       if (v.status === "busy" && v.busyUntil) {
         const msLeft = Math.max(0, v.busyUntil - now);
         const secLeft = Math.ceil(msLeft / 1000);
@@ -296,6 +303,28 @@ renderVehicles() {
         `;
       }
 
+      // ⛽ Tankanzeige
+      if (typeof v.tankstand !== "undefined") {
+        const tank = v.tankstand;
+        const tankColor = tank < 20 ? "#f44336" : tank < 50 ? "#ffa500" : "#4caf50";
+        extra += `
+          <br><small>⛽ Tank: ${tank}%</small>
+          <div class="progress tank">
+            <div class="bar" style="width: ${tank}%; background-color: ${tankColor}"></div>
+          </div>
+        `;
+      }
+
+      // Buttons
+      let buttons = "";
+
+      if (v.status === "frei") {
+        buttons += `
+          <button onclick="app.wartungStart('${v.id}')">🧰 Zur Wartung</button>
+          <button onclick="app.tanken('${v.id}')">⛽ Tanken</button>
+        `;
+      }
+
       div.innerHTML = `
         <strong>${v.id}</strong><br>
         Typ: ${v.type} (${v.org})<br>
@@ -306,6 +335,7 @@ renderVehicles() {
             ? "👨‍🚒 Personal verfügbar"
             : "<span class='no-personnel'>❌ Keine Besatzung</span>"
         }
+        <br>${buttons}
       `;
       body.appendChild(div);
     });
@@ -316,6 +346,53 @@ renderVehicles() {
   });
 
   this.renderStadtStatistik();
+}
+
+wartungStart(id) {
+  const v = this.vehicles.find(v => v.id === id);
+  if (!v || v.status !== "frei") return;
+
+  v.status = "wartung";
+  v.wartungFaellig = true;
+  this.renderVehicles();
+
+  setTimeout(() => {
+    v.status = "frei";
+    v.wartungFaellig = false;
+    v.einsatzZaehler = 0;
+    this.renderVehicles();
+  }, 120000); // 120 Sekunden
+}
+
+tanken(id) {
+  const v = this.vehicles.find(v => v.id === id);
+  if (!v || v.status !== "frei") return;
+
+  v.status = "tanken";
+  this.renderVehicles();
+
+  setTimeout(() => {
+    v.status = "frei";
+    v.tankstand = 100;
+    this.renderVehicles();
+  }, 10000); // 10 Sekunden
+}
+
+updateVehicleStatus(vehicle, status) {
+  vehicle.status = status;
+
+  // Optional: Blockieren, wenn Wartung oder Tank leer
+  if (vehicle.status === "frei") {
+    if (vehicle.wartungFaellig) vehicle.status = "wartung";
+    else if (vehicle.tankstand <= 0) vehicle.status = "tanken";
+  }
+
+  this.renderVehicles();
+}
+
+resetMaintenance(vehicle) {
+  vehicle.einsatzZaehler = 0;
+  vehicle.wartungFaellig = false;
 }
 
 renderIncidents() {
