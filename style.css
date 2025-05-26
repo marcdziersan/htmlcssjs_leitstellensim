@@ -140,3 +140,19 @@ canvas#statistikChart {
   font-size: 0.9em;
   color: #555;
 }
+
+.alarm {
+  color: orange;
+  font-weight: bold;
+  animation: blinken 1s infinite;
+}
+
+.vehicle.alarmiert {
+  border-left: 4px dashed orange;
+  background-color: #fff6e6;
+}
+
+@keyframes blinken {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}

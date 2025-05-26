@@ -34,12 +34,33 @@ this.MAX_PER_WINDOW   = Math.ceil(this.RATE_PER_HOUR * this.WINDOW_HOURS);
           stadt: wache.stadt,
           status: "frei",
           busyUntil: 0,
-          org: wache.typ
+          org: wache.typ,
+          alarmiert: false 
         });
       });
     });
     this.renderVehicles();
   }
+
+  alarmiereFF(vehicle) {
+  if (vehicle.alarmiert) return; // bereits alarmiert
+
+  vehicle.alarmiert = true;
+  console.log(`🚨 Alarmierung läuft für ${vehicle.id}`);
+
+  // UI aktualisieren
+  this.renderVehicles();
+
+  // Nach 2–4 Minuten prüfen, ob Fahrzeug einsatzbereit wird
+  const delay = 1000 * (120 + Math.floor(Math.random() * 120)); // 2–4 Minuten
+  setTimeout(() => {
+    vehicle.alarmiert = false;
+    if (this.isPersonnelAvailable(vehicle)) {
+      this.updateVehicleStatus(vehicle, "frei");
+    }
+    this.renderVehicles();
+  }, delay);
+}
 
   isPersonnelAvailable(vehicle) {
     if (vehicle.org === "BF") return true;
@@ -98,66 +119,77 @@ generateIncident() {
 
 
   assignVehicle(incident) {
-    const now = Date.now();
+  const now = Date.now();
 
-    for (let req of incident.required) {
-      if (!incident.assigned.includes(req)) {
-        const local = this.vehicles.filter(v =>
-          v.type === req &&
-          v.status === "frei" &&
-          v.stadt === incident.stadt &&
-          this.isPersonnelAvailable(v)
-        );
+  for (let req of incident.required) {
+    if (!incident.assigned.includes(req)) {
+      const local = this.vehicles.filter(v =>
+        v.type === req &&
+        v.status === "frei" &&
+        v.stadt === incident.stadt
+      );
 
-        const remote = this.vehicles.filter(v =>
-          v.type === req &&
-          v.status === "frei" &&
-          v.stadt !== incident.stadt &&
-          this.isPersonnelAvailable(v)
-        );
+      const remote = this.vehicles.filter(v =>
+        v.type === req &&
+        v.status === "frei" &&
+        v.stadt !== incident.stadt
+      );
 
-        const vehicle = local[0] || remote[0];
-        if (vehicle) {
-          incident.assigned.push(req);
+      const vehicle = local.find(v => this.isPersonnelAvailable(v)) ||
+                      remote.find(v => this.isPersonnelAvailable(v));
 
-          let delay = 0;
-          if (vehicle.org === "FF") delay += 3000;
-          if (vehicle.stadt !== incident.stadt) delay += 4000;
+      const unbesetzt = local.concat(remote).find(v => !this.isPersonnelAvailable(v) && !v.alarmiert);
 
-          this.updateVehicleStatus(vehicle, delay > 0 ? "anfahrend" : "im Einsatz");
+      // ⏰ FF tagsüber → Alarmierung
+      if (!vehicle && unbesetzt) {
+        this.alarmiereFF(unbesetzt);
+        alert(`${unbesetzt.id} wurde alarmiert! Personal wird nachalarmiert.`);
+        return;
+      }
+
+      if (vehicle) {
+        incident.assigned.push(req);
+
+        let delay = 0;
+        if (vehicle.org === "FF") delay += 3000;
+        if (vehicle.stadt !== incident.stadt) delay += 4000;
+
+        vehicle.startBusyTime = now;
+        this.updateVehicleStatus(vehicle, delay > 0 ? "anfahrend" : "im Einsatz");
+
+        setTimeout(() => {
+          this.updateVehicleStatus(vehicle, "im Einsatz");
+          vehicle.busyUntil = now + incident.duration * 1000 + delay;
+          vehicle.status = "busy";
 
           setTimeout(() => {
-            this.updateVehicleStatus(vehicle, "im Einsatz");
-            vehicle.busyUntil = now + incident.duration * 1000 + delay;
-            vehicle.status = "busy";
+            vehicle.status = "frei";
+            this.renderVehicles();
+          }, incident.duration * 1000);
+        }, delay);
 
-            setTimeout(() => {
-              vehicle.status = "frei";
-              this.renderVehicles();
-            }, incident.duration * 1000);
-          }, delay);
+        this.renderVehicles();
+        this.renderIncidents();
 
-          this.renderVehicles();
-          this.renderIncidents();
-
-          if (incident.required.every(r => incident.assigned.includes(r))) {
-            setTimeout(() => {
-              incident.active = false;
-              const basePoints = { 1: 15, 2: 10, 3: 5 };
-              this.score += basePoints[incident.priority] || 10;
-              this.scoreDisplay.textContent = `Punkte: ${this.score}`;
-              this.addToHistory(incident);
-              this.renderIncidents();
-            }, (incident.duration + delay / 1000) * 1000);
-          }
-
-          return;
+        if (incident.required.every(r => incident.assigned.includes(r))) {
+          setTimeout(() => {
+            incident.active = false;
+            const basePoints = { 1: 15, 2: 10, 3: 5 };
+            this.score += basePoints[incident.priority] || 10;
+            this.scoreDisplay.textContent = `Punkte: ${this.score}`;
+            this.addToHistory(incident);
+            this.renderIncidents();
+          }, (incident.duration + delay / 1000) * 1000);
         }
+
+        return;
       }
     }
-
-    alert("Keine verfügbaren Fahrzeuge – Einsatz bleibt offen!");
   }
+
+  alert("Keine verfügbaren Fahrzeuge – Einsatz bleibt offen!");
+}
+
 
   updateVehicleStatus(vehicle, status) {
     vehicle.status = status;
@@ -179,7 +211,7 @@ renderVehicles() {
   const searchTerm = document.getElementById("vehicleSearch")?.value?.toLowerCase() || "";
   this.vehicleContainer.innerHTML = "";
 
-  // Gruppe nach Stadt
+  // Fahrzeuge nach Stadt gruppieren
   const grouped = {};
   this.vehicles.forEach(v => {
     if (!grouped[v.stadt]) grouped[v.stadt] = [];
@@ -192,11 +224,10 @@ renderVehicles() {
       v.wache.toLowerCase().includes(searchTerm)
     );
 
-    const total     = filtered.length;
+    const total = filtered.length;
     const available = filtered.filter(v => v.status === "frei" && this.isPersonnelAvailable(v)).length;
     if (total === 0) return;
 
-    // Accordion-Gruppe
     const groupDiv = document.createElement("div");
     groupDiv.className = "vehicle-group";
 
@@ -211,15 +242,23 @@ renderVehicles() {
     filtered.forEach(v => {
       const div = document.createElement("div");
       div.className = "vehicle" + (v.status !== "frei" ? " busy" : "");
+      if (v.alarmiert) div.classList.add("alarmiert");
 
-      // Berechne Restzeit und Progress
       let extra = "";
+
+      // Wenn alarmiert (aber noch nicht besetzt)
+      if (v.alarmiert) {
+        extra = `<br><small>📟 Alarmierung läuft...</small>`;
+      }
+
+      // Wenn im Einsatz → Fortschrittsbalken
       if (v.status === "busy" && v.busyUntil) {
-        const msLeft    = Math.max(0, v.busyUntil - now);
-        const secLeft   = Math.ceil(msLeft / 1000);
-        const totalMs   = (v.busyUntil - (v.startBusyTime || (now - msLeft)));
-        const pctDone   = Math.min(100, ((totalMs - msLeft) / totalMs) * 100);
-        extra = `
+        const msLeft = Math.max(0, v.busyUntil - now);
+        const secLeft = Math.ceil(msLeft / 1000);
+        const totalMs = (v.busyUntil - (v.startBusyTime || (now - msLeft)));
+        const pctDone = Math.min(100, ((totalMs - msLeft) / totalMs) * 100);
+
+        extra += `
           <br><small>🕒 Frei in: ${secLeft}s</small>
           <div class="progress">
             <div class="bar" style="width: ${pctDone}%;"></div>

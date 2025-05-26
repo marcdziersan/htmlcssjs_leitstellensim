@@ -1,4 +1,4 @@
-![Logo des Feuerwehr-Leitstellenspiels](https://raw.githubusercontent.com/marcdziersan/htmlcssjs_leitstellensim/refs/heads/main/logo.png)
+# 🚒 Feuerwehr Leitstellenspiel – Kreisleitstelle Mettmann
 
 Ein browserbasiertes Feuerwehr-Leitstellenspiel mit Einsatz- und Fahrzeugmanagement, visualisierten Statistiken und realistischer Schicht- & Alarmierungslogik.
 
@@ -87,5 +87,3 @@ Support, Feedback oder Ideen? Einfach melden!
 ## 📄 Lizenz
 
 MIT License – frei zur privaten & schulischen Nutzung.
-
-![Wallpaper des Feuerwehr-Leitstellenspiels](https://raw.githubusercontent.com/marcdziersan/htmlcssjs_leitstellensim/refs/heads/main/wallpaper.png)
