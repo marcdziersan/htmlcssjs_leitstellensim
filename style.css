@@ -156,3 +156,17 @@ canvas#statistikChart {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
 }
+
+.vehicle.maintenance {
+  background-color: #ccc;
+  border-left: 5px solid #777;
+}
+
+.maintenance {
+  color: #555;
+  font-style: italic;
+}
+
+.vehicle.wartung {
+  background-color: #ffeb3b4d;
+}

@@ -35,7 +35,9 @@ this.MAX_PER_WINDOW   = Math.ceil(this.RATE_PER_HOUR * this.WINDOW_HOURS);
           status: "frei",
           busyUntil: 0,
           org: wache.typ,
-          alarmiert: false 
+          alarmiert: false,
+          einsatzZaehler: 0,
+          wartungFaellig: false
         });
       });
     });
@@ -163,7 +165,23 @@ generateIncident() {
           vehicle.status = "busy";
 
           setTimeout(() => {
-            vehicle.status = "frei";
+            vehicle.einsatzZaehler = (vehicle.einsatzZaehler || 0) + 1;
+
+            if (vehicle.einsatzZaehler >= 10) {
+              vehicle.status = "wartung";
+              vehicle.wartungFaellig = true;
+
+              // 60 Sekunden Wartung simulieren
+              setTimeout(() => {
+                vehicle.status = "frei";
+                vehicle.einsatzZaehler = 0;
+                vehicle.wartungFaellig = false;
+                this.renderVehicles();
+              }, 60000); // 1 Minute
+            } else {
+              vehicle.status = "frei";
+            }
+
             this.renderVehicles();
           }, incident.duration * 1000);
         }, delay);
@@ -189,6 +207,7 @@ generateIncident() {
 
   alert("Keine verfügbaren Fahrzeuge – Einsatz bleibt offen!");
 }
+
 
 
   updateVehicleStatus(vehicle, status) {
@@ -225,7 +244,11 @@ renderVehicles() {
     );
 
     const total = filtered.length;
-    const available = filtered.filter(v => v.status === "frei" && this.isPersonnelAvailable(v)).length;
+    const available = filtered.filter(v =>
+      v.status === "frei" &&
+      this.isPersonnelAvailable(v)
+    ).length;
+
     if (total === 0) return;
 
     const groupDiv = document.createElement("div");
@@ -241,17 +264,24 @@ renderVehicles() {
 
     filtered.forEach(v => {
       const div = document.createElement("div");
-      div.className = "vehicle" + (v.status !== "frei" ? " busy" : "");
+      div.className = "vehicle";
+      if (v.status !== "frei") div.classList.add("busy");
       if (v.alarmiert) div.classList.add("alarmiert");
+      if (v.status === "wartung") div.classList.add("wartung");
 
       let extra = "";
 
-      // Wenn alarmiert (aber noch nicht besetzt)
+      // 📟 Alarmierung läuft
       if (v.alarmiert) {
-        extra = `<br><small>📟 Alarmierung läuft...</small>`;
+        extra += `<br><small>📟 Alarmierung läuft...</small>`;
       }
 
-      // Wenn im Einsatz → Fortschrittsbalken
+      // 🔧 Wartung
+      if (v.status === "wartung") {
+        extra += `<br><small>🔧 In Wartung...</small>`;
+      }
+
+      // 🕒 Fortschritt
       if (v.status === "busy" && v.busyUntil) {
         const msLeft = Math.max(0, v.busyUntil - now);
         const secLeft = Math.ceil(msLeft / 1000);
