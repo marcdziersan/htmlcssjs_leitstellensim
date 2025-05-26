@@ -38,5 +38,25 @@
   <script src="data/wachen.js"></script>
   <script src="data/einsatzarten.js"></script>
   <script src="script.js"></script>
+
+  <script>
+  function tankeAlleFahrzeuge() {
+    app.vehicles.forEach(v => {
+      if (v.status === "frei") {
+        v.status = "tanken";
+        setTimeout(() => {
+          v.status = "frei";
+          v.tankstand = 100;
+          app.renderVehicles();
+        }, 10000); // 10 Sekunden Tankzeit
+      }
+    });
+    app.renderVehicles();
+  }
+
+  // Automatischer Start (optional)
+  tankeAlleFahrzeuge();
+</script>
+
 </body>
 </html>
