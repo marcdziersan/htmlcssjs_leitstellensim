@@ -202,7 +202,7 @@ renderVehicles() {
 
     const header = document.createElement("div");
     header.className = "accordion-header";
-    header.textContent = `${stadt} – ${available} von ${total} verfügbar`;
+    header.textContent = `${stadt} – ${available} / ${total}`;
     groupDiv.appendChild(header);
 
     const body = document.createElement("div");
