@@ -1,4 +1,4 @@
-# 🚒 Feuerwehr Leitstellenspiel – Kreisleitstelle Mettmann
+![Logo des Feuerwehr-Leitstellenspiels](https://raw.githubusercontent.com/marcdziersan/htmlcssjs_leitstellensim/refs/heads/main/logo.png)
 
 Ein browserbasiertes Feuerwehr-Leitstellenspiel mit Einsatz- und Fahrzeugmanagement, visualisierten Statistiken und realistischer Schicht- & Alarmierungslogik.
 
