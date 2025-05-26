@@ -1,17 +1,23 @@
+![Wallpaper](wallpaper.png)
 # 🚒 Feuerwehr Leitstellenspiel – Kreisleitstelle Mettmann
 
 Ein browserbasiertes Feuerwehr-Leitstellenspiel mit Einsatz- und Fahrzeugmanagement, visualisierten Statistiken und realistischer Schicht- & Alarmierungslogik.
 
+---
+
 ## 🔥 Features
 
-- Fahrzeuge nach BF / FF (inkl. Personalverfügbarkeit)
-- Realistische Einsatzarten mit Priorität (1–3)
-- Fahrzeuggruppen nach Stadt (Accordion-UI)
-- Einsatzverlauf / Fahrzeugstatus
-- Stadtstatistik (Chart.js)
-- Fahrzeug-Suchfunktion
-- Responsive Design (Desktop & Mobile)
-- Begrenzung auf max. 4 Einsätze pro 15 Minuten
+- 🚑 Fahrzeuge nach BF / FF (inkl. Personalverfügbarkeit & Dienstzeiten)
+- 📟 BOS-Pager-Simulation: FF-Alarmierung außerhalb der Dienstzeit
+- 🧠 Realistische Einsatzarten mit Priorität (1–3)
+- 🧩 Fahrzeuggruppen nach Stadt (Accordion-UI)
+- 🚗 Fahrzeugstatus: frei, anfahrend, im Einsatz, alarmiert
+- ⏱ Live-Countdown und Fortschrittsanzeige je Einsatz und Fahrzeug
+- 📊 Stadtstatistik (Chart.js)
+- 🔍 Fahrzeug-Suchfunktion
+- 📱 Responsive Design (Desktop & Mobile)
+- ⚠️ Dynamische Einsatzbegrenzung anhand statistischer Werte (16.000 Einsätze/Jahr)
+- ⚙️ Vorbereitung auf Wartung & Tankstatus je Fahrzeug
 
 ---
 
@@ -32,16 +38,19 @@ Dieses Projekt deckt zahlreiche **lehrplanspezifische Inhalte** ab, insbesondere
 
 - Objektorientierte Programmierung (OOP)
 - Arrays, Objekte, Filter, Maps
-- Zeitgesteuerte Prozesse (setInterval, setTimeout)
-- Zustandsspeicherung und Statusverwaltung
+- Zeitgesteuerte Prozesse (`setInterval`, `setTimeout`)
+- Status- & Zustandsverwaltung in Echtzeit
 - Dynamische UI-Komponenten (Accordion, Suche, Filter)
-- Funktionsaufrufe & Parameter-Handling
+- Benutzerinteraktion und Systemlogik (z. B. BOS-Alarmierung)
+- Einsatzspezifisches Delay je Organisationseinheit (FF/BF)
 
 ### 📈 Projektstruktur & Dokumentation
 
-- Projektstruktur mit Ordnerhierarchie
-- Einsatz von `README.md` zur Dokumentation
-- Erweiterbar für Versionierung (Git) und Deployment
+- Klar strukturierte Projektarchitektur
+- Verwendung von Markdown-Dateien (`README.md`, `CHANGELOG.md`, `STATS.md`)
+- Kommentierter, nachvollziehbarer Quellcode
+- Statistisch fundierte Spielmechanik zur Einsatzfrequenz
+- Vorbereitete Versionierung (Git) & Deployment-Readiness
 
 ---
 
@@ -52,6 +61,10 @@ leitstelle/
 ├── index.html
 ├── script.js
 ├── style.css
+├── logo.png
+├── README.md
+├── CHANGELOG.md
+├── STATS.md
 └── data/
     ├── wachen.js
     └── einsatzarten.js
@@ -63,27 +76,36 @@ leitstelle/
 
 - **HTML, CSS, Vanilla JavaScript**
 - OOP (ES6 Class)
-- [Chart.js](https://www.chartjs.org/) (Statistik)
+- [Chart.js](https://www.chartjs.org/) für Diagramme
+- Simulierte Realzeitprozesse (z. B. Alarmierung, Einsatzdauer)
+- Konfigurierbare Parameter für Realitätsnähe (FF-Dienstzeiten, Limits etc.)
 
 ---
 
 ## 🧩 Geplante Erweiterungen
 
-- Kartenintegration (Leaflet.js)
-- Dienstpläne / Wochenplanung FF
-- Einsatzleiter-Modus
-- Multiplayer (optional)
-- Lokale Speicherung (LocalStorage / Savegame)
+- 🗺️ Kartenintegration (Leaflet.js) für Echtortung
+- 📆 Dienstplan-Visualisierung (Tag/Nacht/Wochenplan)
+- 🧰 Fahrzeugwartung mit Statusanzeige & Sperrung
+- ⛽ Tankfüllstand mit Bedarfssimulation
+- 👨‍🚒 Einsatzleiter-Modus mit manueller Disposition
+- 🎮 Multiplayer (optional)
+- 💾 Savegame & lokale Spielstände (LocalStorage)
 
 ---
 
 ## 👨‍🚒 Autor
 
-**Marcus** – Entwicklung im Rahmen der Umschulung zum Fachinformatiker AE.  
-Support, Feedback oder Ideen? Einfach melden!
+**Marcus**  
+Entwicklung im Rahmen der Umschulung zum Fachinformatiker AE.  
+Fragen, Anregungen oder Verbesserungsvorschläge? Gerne melden!
 
 ---
 
 ## 📄 Lizenz
 
-MIT License – frei zur privaten & schulischen Nutzung.
+MIT License – frei zur privaten, schulischen & nicht-kommerziellen Nutzung.
+
+---
+
+![Logo](logo.png)
