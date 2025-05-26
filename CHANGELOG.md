@@ -4,7 +4,17 @@ Alle bedeutenden Änderungen am Feuerwehr-Leitstellenspiel werden in diesem Doku
 
 ## [Unreleased]
 
-* —  
+* —
+
+## [v1.4.1] - 2025-05-27
+
+### Added
+- Simulation der FF-Alarmierung (📟) bei Einsätzen außerhalb der Dienstzeit
+- Fahrzeugstatus "alarmiert" mit Zeitverzögerung bis Einsatzbereitschaft
+- Fortschrittsbalken für laufende Einsätze mit Restzeit-Anzeige
+
+### Fixed
+- Fehler `intervalId before initialization` im Countdown behoben
 
 ## [v1.4.0] - 2025-05-26
 
