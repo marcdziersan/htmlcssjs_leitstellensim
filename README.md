@@ -87,3 +87,5 @@ Support, Feedback oder Ideen? Einfach melden!
 ## 📄 Lizenz
 
 MIT License – frei zur privaten & schulischen Nutzung.
+
+![Wallpaper des Feuerwehr-Leitstellenspiels](https://raw.githubusercontent.com/marcdziersan/htmlcssjs_leitstellensim/refs/heads/main/wallpaper.png)
