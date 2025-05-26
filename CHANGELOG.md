@@ -6,15 +6,28 @@ Alle bedeutenden Änderungen am Feuerwehr-Leitstellenspiel werden in diesem Doku
 
 * —
 
-## [v1.4.1] - 2025-05-27
+## [v1.5.0] - 2025-05-27
 
 ### Added
-- Simulation der FF-Alarmierung (📟) bei Einsätzen außerhalb der Dienstzeit
-- Fahrzeugstatus "alarmiert" mit Zeitverzögerung bis Einsatzbereitschaft
-- Fortschrittsbalken für laufende Einsätze mit Restzeit-Anzeige
+- 🧠 FF-Alarmierung bei Personalmangel außerhalb Dienstzeiten (BOS-Pager-Simulation)
+- 📟 Visualisierung: Fahrzeuge mit „Alarmierung läuft…“ erhalten speziellen Status & Styling
+- 🕒 Countdown-Overlay für Fahrzeuge im Einsatz mit Fortschrittsanzeige (Progress-Bar)
+- 🔧 Wartungs-Feature (Vorbereitung): Fahrzeuge können in Zukunft Wartung benötigen
+- 🏷️ Fahrzeugstatus „wartung“ eingeführt (UI-Anzeige integriert, Logik folgt)
+- 🔍 Visuelle Markierung von alarmierten Fahrzeugen in der Fahrzeugübersicht
+- 🔄 FF-Alarmierungslogik simuliert personelle Verfügbarkeit mit realistischer Verzögerung
+
+### Changed
+- 🔁 `assignVehicle()` erkennt nun unbesetzte Fahrzeuge und leitet bei FF eine Alarmierung ein
+- 🔁 `renderVehicles()` zeigt jetzt auch Alarmierungsstatus und Wartungshinweise an
+- 📊 Fortschrittsanzeige bei `vehicle.status === "busy"` durch `% Done` ergänzt
+- ⚙️ Refactoring interner Logik zur besseren Status-Verwaltung (`alarmiert`, `busyUntil`, etc.)
 
 ### Fixed
-- Fehler `intervalId before initialization` im Countdown behoben
+- ✅ Fehler beim Countdown-Timer (`intervalId` vor Initialisierung) wurde behoben
+- ✅ Verbesserte Erkennung bei überörtlichem Einsatz von FF mit Alarmierung
+
+---
 
 ## [v1.4.0] - 2025-05-26
 
