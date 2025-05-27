@@ -15,6 +15,14 @@ Alle bedeutenden Änderungen am Feuerwehr-Leitstellenspiel werden in diesem Doku
 - Automatische Erkennung der Fahrzeugherkunft bei Einsatzabschluss
 - Keine Änderungen an der Benutzeroberfläche notwendig – erfolgt dynamisch
 
+### 📋 Fahrzeugübersicht modernisiert
+- 🚗 **Accordion-Inhalte jetzt als responsive Tabelle** statt Einzeldarstellung:
+  - Übersichtlichere Darstellung bei großen Fuhrparks
+  - Klar strukturierte Spalten: ID, Typ, Status, Tank, Besatzung, Aktionen
+- Responsive Design: Tabellen passen sich automatisch an Bildschirmbreite an
+- Bisheriger Accordion-Header (`Stadt X – Y / Z verfügbar`) bleibt bestehen
+- Geöffnete Accordions bleiben beim Status-Update erhalten (z. B. bei Tanken/Wartung)
+
 ### 🧩 Technische Änderungen
 - Erweiterung der `incident.assigned`-Verarbeitung um gezielte Fahrzeugzuordnung aus `this.vehicles`
 - Mapping der Fahrzeug-IDs auf zugehörige Städte bei `addToHistory()`
