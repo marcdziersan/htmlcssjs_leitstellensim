@@ -6,6 +6,32 @@ Alle bedeutenden Änderungen am Feuerwehr-Leitstellenspiel werden in diesem Doku
 
 * —
 
+## 🆕 **Changelog – Version 1.7.0 (27.05.2025)**
+
+### 💰 **Neue Features**
+
+* **Einsatzvergütungssystem** eingeführt: Jeder abgeschlossene Einsatz bringt jetzt zusätzlich zur Punktevergabe auch eine **finanzielle Belohnung** (abhängig von Einsatztyp, Dauer und Priorität).
+* **Realitätsnahe Vergütungstabellen** für alle über 60 Einsatzarten implementiert (`reward`-Werte in `einsatzarten.js`).
+* **Neues Budgetsystem** (`this.budget`) mit persistenter Verwaltung im Spielablauf.
+* **HUD-Anzeige** für Punkte & Kontostand:
+
+  * Kompakte, moderne Statusboxen mit Schatten und Farbabgrenzung
+  * Übersichtlich über dem Spiel eingeblendet
+  * Automatische Aktualisierung bei jeder Änderung
+
+### 🎨 **UI/UX-Optimierungen**
+
+* Neues flexibles HUD-Layout (`#hud`) ersetzt die bisherigen Einzelanzeigen für Punkte und Konto
+* Strukturierung in HUD-Boxen mit Titel und Wert (🧠 klarer ablesbar, 📱 responsiv)
+
+### ⚙️ **Technische Änderungen**
+
+* UI-Elemente `#score` und `#budget` in neue Containerstruktur verschoben (`hud-box`)
+* Einsatzabschlusslogik (`assignVehicle()`) um Auszahlungsvorgang erweitert
+* Neue CSS-Regeln für HUD-Box (`.hud-box`, `.hud-title`, `.hud-value`) in `style.css` integriert
+
+---
+
 ## 🆕 **Changelog – Version 1.6.0 (27.05.2025)**
 
 ### ✨ **Neue Funktionen**
