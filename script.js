@@ -14,8 +14,10 @@ this.MAX_PER_WINDOW   = Math.ceil(this.RATE_PER_HOUR * this.WINDOW_HOURS);
     this.history = [];
     this.incidentId = 0;
     this.einsatzTimestamps = [];
+    this.budget = 0;
 
     this.scoreDisplay = document.getElementById("score");
+    this.budgetDisplay = document.getElementById("budget");
     this.vehicleContainer = document.getElementById("vehicle-container");
     this.incidentsContainer = document.getElementById("incidents-container");
     this.historyContainer = document.getElementById("history");
@@ -210,6 +212,9 @@ assignVehicle(incident) {
     incident.active = false;
     const basePoints = { 1: 15, 2: 10, 3: 5 };
     this.score += basePoints[incident.priority] || 10;
+    const einsatzReward = EINSATZARTEN.find(e => e.title === incident.title)?.reward || 0;
+    this.budget += einsatzReward;
+    this.budgetDisplay.textContent = `Konto: ${this.budget.toLocaleString()} €`;
     this.scoreDisplay.textContent = `Punkte: ${this.score}`;
     this.addToHistory(incident);
     this.renderIncidents();

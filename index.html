@@ -13,7 +13,17 @@
 </head>
 <body>
   <h1>🚒 Kreisleitstelle Mettmann</h1>
-  <div id="score">Punkte: 0</div>
+<div id="hud">
+  <div class="hud-box">
+    <div class="hud-title">Punkte</div>
+    <div id="score" class="hud-value">0</div>
+  </div>
+  <div class="hud-box">
+    <div class="hud-title">Konto</div>
+    <div id="budget" class="hud-value">0 €</div>
+  </div>
+</div>
+
 
   <!-- Fahrzeug-Suchfeld -->
   <input type="text" id="vehicleSearch" placeholder="🔍 Suche Fahrzeug-ID oder Wache..." style="width: 300px; padding: 6px; margin: 20px auto; display: block;">
