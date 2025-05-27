@@ -6,6 +6,31 @@ Alle bedeutenden Änderungen am Feuerwehr-Leitstellenspiel werden in diesem Doku
 
 * —
 
+## [v1.8.0] – 2025-05-27
+
+### 🧾 Einsatzhistorie erweitert
+- **Stadtanzeige pro Fahrzeug**: In der Einsatzhistorie wird jetzt zu jedem eingesetzten Fahrzeug die zugehörige **Stadt** angezeigt.
+  - Beispiel: `HLF-Haan-1 (Haan), ELW-Mettmann-1 (Mettmann)`
+  - Unterstützt sowohl stadtinterne als auch überörtliche Einsätze
+- Automatische Erkennung der Fahrzeugherkunft bei Einsatzabschluss
+- Keine Änderungen an der Benutzeroberfläche notwendig – erfolgt dynamisch
+
+### 🧩 Technische Änderungen
+- Erweiterung der `incident.assigned`-Verarbeitung um gezielte Fahrzeugzuordnung aus `this.vehicles`
+- Mapping der Fahrzeug-IDs auf zugehörige Städte bei `addToHistory()`
+- Historienanzeige in `renderHistory()` unverändert, aber inhaltlich erweitert
+
+---
+
+### 🔥 Features seit v1.8.0
+
+- 🧾 Einsatzhistorie zeigt nun:
+  - 🚓 Fahrzeugtyp
+  - 📍 Herkunftsstadt
+- 🧠 Mehr Nachvollziehbarkeit bei interkommunaler Hilfe
+
+---
+
 ## 🆕 **Changelog – Version 1.7.0 (27.05.2025)**
 
 ### 💰 **Neue Features**
