@@ -6,6 +6,38 @@ Alle bedeutenden Änderungen am Feuerwehr-Leitstellenspiel werden in diesem Doku
 
 * —
 
+# 🧾 Changelog
+
+## 📦 Version 1.9.0 – Tab-UI & Design Update
+
+### ✨ Neue Features
+- 🗂 **Tab-Menü** zur klaren Trennung von Spielbereichen:
+  - `🏠 Home`: Einführung & Spielbeschreibung
+  - `💰 Punkte & Konto`: HUD mit Punktestand & Budget
+  - `🚗 Einheiten`: Accordion-Tabellenansicht aller Fahrzeuge
+  - `📊 Statistik`: Live-Auswertung mit Chart.js
+  - `🚨 Einsätze`: Aktive laufende Einsätze
+  - `📜 Einsatzhistorie`: Letzte abgeschlossene Einsätze
+
+- 💡 **Responsive Tab-Steuerung** mit dynamischer Aktivierung per Klick
+
+- 🎨 **Neues Designschema** (Corporate Colors: **Rot**, **Weiß**, **Gelb**) mit:
+  - Modernisierten HUD-Boxen
+  - Klareren Tabellen
+  - Verbesserter Fahrzeugstatus-Farbgebung (z. B. Alarmiert, Wartung, Tank)
+
+- ✅ Alle bisherigen Spielmechaniken bleiben vollständig erhalten
+- 💼 Vorbereitung auf Theme-Wechsel & Tag/Nacht-Modi
+
+### 🔧 Verbesserungen
+- Keine Änderungen an bestehender Spiellogik notwendig
+- Einfach erweiterbar um Badge-Logik (z. B. „neuer Einsatz“ auf Tabs)
+
+---
+
+> Diese Version ist voll kompatibel mit v1.6.x und v1.5.x.
+> Der Fokus liegt auf Übersichtlichkeit, Designklarheit und Benutzerfreundlichkeit.
+
 ## [v1.8.0] – 2025-05-27
 
 ### 🧾 Einsatzhistorie erweitert
