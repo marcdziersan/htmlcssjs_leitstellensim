@@ -44,7 +44,6 @@ window.EINSATZARTEN = [
 
   // RETTUNGSDIENST (RD)
   { title: "Herzinfarkt", required: ["RTW", "NEF"], priority: 1, duration: 600, reward: 800 },
-  { title: "Bewusstlose Person", required: ["RTW", "NEF"], priority: 1, duration: 600, reward: 800 },
   { title: "Krampfanfall", required: ["RTW", "NEF"], priority: 1, duration: 480, reward: 700 },
   { title: "Hausnotruf", required: ["RTW"], priority: 2, duration: 300, reward: 300 },
   { title: "Sturz in Wohnung", required: ["RTW"], priority: 2, duration: 360, reward: 350 },
@@ -63,5 +62,8 @@ window.EINSATZARTEN = [
   { title: "Asthmaanfall Kind", required: ["RTW", "NEF"], priority: 1, duration: 420, reward: 700 },
   { title: "Atemnot", required: ["RTW", "NEF"], priority: 1, duration: 480, reward: 700 },
   { title: "Verletzung durch Stromschlag", required: ["RTW", "NEF", "ABC"], priority: 1, duration: 600, reward: 1000 },
-  { title: "Seelevel-Notruf", required: ["RTW"], priority: 2, duration: 300, reward: 300 }
+  { title: "Seelevel-Notruf", required: ["RTW"], priority: 2, duration: 300, reward: 300 },
+  { title: "Reanimation", required: ["FR", "RTW", "NEF"], priority: 1, duration: 600, reward: 750 },
+  { title: "Bewusstlose Person", required: ["FR", "RTW"], priority: 1, duration: 480, reward: 500 },
+  { title: "Sturz im Freien", required: ["FR", "RTW"], priority: 2, duration: 360, reward: 350 }
 ];

@@ -4,69 +4,135 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kreisleitstelle Mettmann</title>
-
-  <!-- Chart.js für Statistik -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <!-- Style -->
   <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .tab-button {
+      padding: 10px 20px;
+      background: #e0e0e0;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .tab-button.active {
+      background: #d32f2f;
+      color: #fff;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+  </style>
 </head>
 <body>
   <h1>🚒 Kreisleitstelle Mettmann</h1>
-<div id="hud">
-  <div class="hud-box">
-    <div class="hud-title">Punkte</div>
-    <div id="score" class="hud-value">0</div>
+
+  <!-- TAB-NAVIGATION -->
+  <div class="tabs">
+    <button class="tab-button active" data-tab="tab-home">🏠 Home</button>
+    <button class="tab-button" data-tab="tab-hud">💰 Punkte & Konto</button>
+    <button class="tab-button" data-tab="tab-fahrzeuge">🚗 Einheiten</button>
+    <button class="tab-button" data-tab="tab-statistik">📊 Statistik</button>
+    <button class="tab-button" data-tab="tab-einsaetze">🚨 Einsätze</button>
+    <button class="tab-button" data-tab="tab-historie">📜 Einsatzhistorie</button>
   </div>
-  <div class="hud-box">
-    <div class="hud-title">Konto</div>
-    <div id="budget" class="hud-value">0 €</div>
+
+  <!-- TAB INHALTE -->
+  <div id="tab-home" class="tab-content active">
+    <p style="text-align: center; max-width: 600px; margin: auto;">
+      Willkommen bei der <strong>Kreisleitstelle Mettmann</strong>! Koordiniere Feuerwehr und Rettungsdienst, optimiere deine Einheiten und sorge für effiziente Einsatzbearbeitung.
+    </p>
   </div>
-</div>
 
+  <div id="tab-hud" class="tab-content">
+    <div id="hud">
+      <div class="hud-box">
+        <div class="hud-title">Punkte</div>
+        <div class="hud-value" id="score">0</div>
+      </div>
+      <div class="hud-box">
+        <div class="hud-title">Konto</div>
+        <div class="hud-value" id="budget">0 €</div>
+      </div>
+    </div>
+  </div>
 
-  <!-- Fahrzeug-Suchfeld -->
-  <input type="text" id="vehicleSearch" placeholder="🔍 Suche Fahrzeug-ID oder Wache..." style="width: 300px; padding: 6px; margin: 20px auto; display: block;">
+  <div id="tab-fahrzeuge" class="tab-content">
+    <input type="text" id="vehicleSearch" placeholder="🔍 Suche Fahrzeug-ID oder Wache..." />
+    <div id="vehicle-container"></div>
+  </div>
 
-  <!-- Fahrzeuge -->
-  <h2>Fahrzeuge</h2>
-  <div id="vehicle-container"></div>
+  <div id="tab-statistik" class="tab-content">
+    <h2>📊 Statistik Fahrzeugverfügbarkeit</h2>
+    <canvas id="statistikChart" width="600" height="300"></canvas>
+  </div>
 
-  <!-- Statistik (Chart.js) -->
-  <h2>Statistik Fahrzeugverfügbarkeit</h2>
-  <canvas id="statistikChart" width="600" height="300"></canvas>
+  <div id="tab-einsaetze" class="tab-content">
+    <h2>🚨 Aktive Einsätze</h2>
+    <div id="incidents-container"></div>
+  </div>
 
-  <!-- Einsätze -->
-  <h2>Aktive Einsätze</h2>
-  <div id="incidents-container"></div>
+  <div id="tab-historie" class="tab-content">
+    <h2>📜 Einsatzhistorie</h2>
+    <div id="history"></div>
+  </div>
 
-  <!-- Historie -->
-  <h2>Einsatzhistorie</h2>
-  <div id="history"></div>
-
-  <!-- Daten & Script -->
+  <!-- DATEN & SPIEL-LOGIK -->
   <script src="data/wachen.js"></script>
   <script src="data/einsatzarten.js"></script>
   <script src="script.js"></script>
 
   <script>
-  function tankeAlleFahrzeuge() {
-    app.vehicles.forEach(v => {
-      if (v.status === "frei") {
-        v.status = "tanken";
-        setTimeout(() => {
-          v.status = "frei";
-          v.tankstand = 100;
-          app.renderVehicles();
-        }, 10000); // 10 Sekunden Tankzeit
-      }
+    // Tab-Menü Logik
+    document.querySelectorAll(".tab-button").forEach(button => {
+      button.addEventListener("click", () => {
+        const tabId = button.dataset.tab;
+
+        // Tabs ausblenden
+        document.querySelectorAll(".tab-content").forEach(tab => {
+          tab.classList.remove("active");
+        });
+        // Buttons zurücksetzen
+        document.querySelectorAll(".tab-button").forEach(btn => {
+          btn.classList.remove("active");
+        });
+
+        // Aktivieren
+        document.getElementById(tabId).classList.add("active");
+        button.classList.add("active");
+      });
     });
-    app.renderVehicles();
-  }
 
-  // Automatischer Start (optional)
-  tankeAlleFahrzeuge();
-</script>
+    // Optionaler Autostart
+    function tankeAlleFahrzeuge() {
+      app.vehicles.forEach(v => {
+        if (v.status === "frei") {
+          v.status = "tanken";
+          setTimeout(() => {
+            v.status = "frei";
+            v.tankstand = 100;
+            app.renderVehicles();
+          }, 10000);
+        }
+      });
+      app.renderVehicles();
+    }
 
+    // tankeAlleFahrzeuge(); // Bei Bedarf aktivieren
+  </script>
 </body>
 </html>

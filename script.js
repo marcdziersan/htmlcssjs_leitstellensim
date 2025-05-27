@@ -1,4 +1,16 @@
 const ZEITFAKTOR = 0.1; // 0.1 = 10x schneller (600s → 60s)
+const DISTANZ = {
+  "Mettmann":        ["Demostadt", "Erkrath", "Wülfrath", "Ratingen", "Hilden", "Velbert", "Heiligenhaus", "Haan", "Langenfeld", "Monheim am Rhein"],
+  "Erkrath":         ["Demostadt", "Mettmann", "Hilden", "Haan", "Ratingen", "Langenfeld", "Monheim am Rhein", "Velbert", "Wülfrath"],
+  "Hilden":          ["Demostadt", "Erkrath", "Langenfeld", "Haan", "Mettmann", "Monheim am Rhein", "Ratingen", "Wülfrath", "Velbert"],
+  "Ratingen":        ["Demostadt", "Heiligenhaus", "Mettmann", "Erkrath", "Velbert", "Hilden", "Wülfrath", "Langenfeld", "Monheim am Rhein"],
+  "Velbert":         ["Demostadt", "Heiligenhaus", "Wülfrath", "Mettmann", "Ratingen", "Haan", "Erkrath", "Hilden"],
+  "Langenfeld":      ["Demostadt", "Monheim am Rhein", "Hilden", "Erkrath", "Haan", "Mettmann", "Ratingen"],
+  "Monheim am Rhein":["Demostadt", "Langenfeld", "Hilden", "Erkrath", "Ratingen", "Mettmann"],
+  "Haan":            ["Demostadt", "Hilden", "Erkrath", "Wülfrath", "Mettmann", "Langenfeld", "Velbert"],
+  "Heiligenhaus":    ["Demostadt", "Velbert", "Ratingen", "Mettmann", "Wülfrath"],
+  "Wülfrath":        ["Demostadt", "Velbert", "Mettmann", "Haan", "Heiligenhaus", "Ratingen", "Erkrath"]
+};
 
 class Leitstelle {
   constructor() {
@@ -41,38 +53,48 @@ this.MAX_PER_WINDOW   = Math.ceil(this.RATE_PER_HOUR * this.WINDOW_HOURS);
           org: wache.typ,
           alarmiert: false,
           einsatzZaehler: 0,
-          wartungFaellig: false
+          wartungFaellig: false,
+          personNachalarmiert: false
         });
       });
     });
     this.renderVehicles();
   }
 
-  alarmiereFF(vehicle) {
-  if (vehicle.alarmiert) return; // bereits alarmiert
+alarmiereFF(vehicle) {
+  if (vehicle.alarmiert) return;
 
   vehicle.alarmiert = true;
   console.log(`🚨 Alarmierung läuft für ${vehicle.id}`);
 
-  // UI aktualisieren
   this.renderVehicles();
 
-  // Nach 2–4 Minuten prüfen, ob Fahrzeug einsatzbereit wird
-  const delay = 1000 * (120 + Math.floor(Math.random() * 120)); // 2–4 Minuten
+  const delay = 60 * 1000;
   setTimeout(() => {
     vehicle.alarmiert = false;
-    if (this.isPersonnelAvailable(vehicle)) {
-      this.updateVehicleStatus(vehicle, "frei");
-    }
+    vehicle.status = "frei";
+    vehicle.personNachalarmiert = true; // 👈 simuliertes Personal verfügbar
     this.renderVehicles();
   }, delay);
 }
 
-  isPersonnelAvailable(vehicle) {
-    if (vehicle.org === "BF") return true;
-    const hour = new Date().getHours();
-    return hour < 6 || hour >= 17;
-  }
+
+nachalarmieren(id) {
+  const vehicle = this.vehicles.find(v => v.id === id);
+  if (!vehicle || vehicle.alarmiert) return;
+
+  this.alarmiereFF(vehicle); // nutzt bestehende Alarmfunktion
+  alert(`${vehicle.id} wurde manuell nachalarmiert!`);
+}
+
+
+isPersonnelAvailable(vehicle) {
+  if (vehicle.org === "BF") return true; // BF: immer besetzt
+  if (vehicle.type === "RTW" || vehicle.type === "FR" || vehicle.type === "NEF") return true;
+  if (vehicle.personNachalarmiert) return true; // FF: nach Pager
+  const hour = new Date().getHours();
+  return hour < 6 || hour >= 17; // FF regulär: nur nachts/früh/abends
+}
 
   getPriorityColor(priority) {
     if (priority === 1) return "#ff4c4c";
@@ -141,7 +163,7 @@ assignVehicle(incident) {
         (v.tankstand ?? 100) > 20
       );
 
-      const remote = this.vehicles.filter(v =>
+      let remote = this.vehicles.filter(v =>
         v.type === req &&
         v.status === "frei" &&
         v.stadt !== incident.stadt &&
@@ -150,7 +172,14 @@ assignVehicle(incident) {
         (v.tankstand ?? 100) > 20
       );
 
-      // Nächstes verfügbares Fahrzeug
+      // 🚨 NEU: remote nach DISTANZ sortieren
+      const stadtPriorität = DISTANZ[incident.stadt] || [];
+      remote.sort((a, b) => {
+        const aIndex = stadtPriorität.indexOf(a.stadt);
+        const bIndex = stadtPriorität.indexOf(b.stadt);
+        return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
+      });
+
       const vehicle = local[0] || remote[0];
 
       // Falls keine Besatzung: Pager-Alarm für FF
@@ -182,12 +211,12 @@ assignVehicle(incident) {
           setTimeout(() => {
             vehicle.einsatzZaehler = (vehicle.einsatzZaehler || 0) + 1;
             vehicle.tankstand = Math.max(0, (vehicle.tankstand ?? 100) - 10);
+            vehicle.personNachalarmiert = false;
 
             if (vehicle.einsatzZaehler >= 10) {
               vehicle.status = "wartung";
               vehicle.wartungFaellig = true;
 
-              // 🔧 Wartung für 60 Sekunden simulieren
               setTimeout(() => {
                 vehicle.status = "frei";
                 vehicle.einsatzZaehler = 0;
@@ -206,20 +235,23 @@ assignVehicle(incident) {
         this.renderIncidents();
 
         if (incident.required.every(r => incident.assigned.includes(r))) {
-  incident.arrivalTime = Date.now(); // Startpunkt für Timer
+          incident.arrivalTime = Date.now();
 
-  setTimeout(() => {
-    incident.active = false;
-    const basePoints = { 1: 15, 2: 10, 3: 5 };
-    this.score += basePoints[incident.priority] || 10;
-    const einsatzReward = EINSATZARTEN.find(e => e.title === incident.title)?.reward || 0;
-    this.budget += einsatzReward;
-    this.budgetDisplay.textContent = `Konto: ${this.budget.toLocaleString()} €`;
-    this.scoreDisplay.textContent = `Punkte: ${this.score}`;
-    this.addToHistory(incident);
-    this.renderIncidents();
-  }, incident.duration * 1000);
-}
+          setTimeout(() => {
+            incident.active = false;
+            const basePoints = { 1: 15, 2: 10, 3: 5 };
+            this.score += basePoints[incident.priority] || 10;
+
+            const einsatzReward = EINSATZARTEN.find(e => e.title === incident.title)?.reward || 0;
+            this.budget += einsatzReward;
+
+            this.budgetDisplay.textContent = `Konto: ${this.budget.toLocaleString()} €`;
+            this.scoreDisplay.textContent = `Punkte: ${this.score}`;
+
+            this.addToHistory(incident);
+            this.renderIncidents();
+          }, incident.duration * 1000);
+        }
 
         return;
       }
@@ -256,11 +288,14 @@ this.history.push({
 renderVehicles() {
   const now = Date.now();
   const searchTerm = document.getElementById("vehicleSearch")?.value?.toLowerCase() || "";
+
+  // Offen-Zustände merken
   const offeneStädte = new Set();
-document.querySelectorAll(".accordion-body.open").forEach(body => {
-  const stadt = body.getAttribute("data-stadt");
-  if (stadt) offeneStädte.add(stadt);
-});
+  document.querySelectorAll(".accordion-body.open").forEach(body => {
+    const stadt = body.getAttribute("data-stadt");
+    if (stadt) offeneStädte.add(stadt);
+  });
+
   this.vehicleContainer.innerHTML = "";
 
   const grouped = {};
@@ -291,60 +326,76 @@ document.querySelectorAll(".accordion-body.open").forEach(body => {
     header.textContent = `${stadt} – ${available} / ${total}`;
     groupDiv.appendChild(header);
 
-const body = document.createElement("div");
-body.className = "accordion-body";
-body.setAttribute("data-stadt", stadt);
+    const body = document.createElement("div");
+    body.className = "accordion-body";
+    body.setAttribute("data-stadt", stadt);
 
-if (offeneStädte.has(stadt)) {
-  body.classList.add("open");
-}
+    if (offeneStädte.has(stadt)) {
+      body.classList.add("open");
+    }
 
-const table = document.createElement("table");
-table.className = "vehicle-table";
+    const table = document.createElement("table");
+    table.className = "vehicle-table";
 
-const thead = document.createElement("thead");
-thead.innerHTML = `
-  <tr>
-    <th>ID</th>
-    <th>Typ</th>
-    <th>Status</th>
-    <th>Tank</th>
-    <th>Besatzung</th>
-    <th>Aktion</th>
-  </tr>`;
-table.appendChild(thead);
+    const thead = document.createElement("thead");
+    thead.innerHTML = `
+      <tr>
+        <th>ID</th>
+        <th>Typ</th>
+        <th>Status</th>
+        <th>Tank</th>
+        <th>Besatzung</th>
+        <th>Aktion</th>
+      </tr>`;
+    table.appendChild(thead);
 
-const tbody = document.createElement("tbody");
+    const tbody = document.createElement("tbody");
 
-filtered.forEach(v => {
-  const tank = typeof v.tankstand !== "undefined" ? `${v.tankstand}%` : "-";
-  const besatzung = this.isPersonnelAvailable(v)
-    ? "👨‍🚒 verfügbar"
-    : "<span class='no-personnel'>❌ fehlt</span>";
+    filtered.forEach(v => {
+      const tank = typeof v.tankstand !== "undefined" ? `${v.tankstand}%` : "-";
+      const besatzung = this.isPersonnelAvailable(v)
+        ? "👨‍🚒 verfügbar"
+        : "<span class='no-personnel'>❌ fehlt</span>";
 
-  const row = document.createElement("tr");
-  row.innerHTML = `
-    <td><strong>${v.id}</strong></td>
-    <td>${v.type} (${v.org})</td>
-    <td>${v.status}</td>
-    <td>${tank}</td>
-    <td>${besatzung}</td>
-    <td>
-      ${v.status === "frei" ? `
-        <button onclick="app.wartungStart('${v.id}')">🧰</button>
-        <button onclick="app.tanken('${v.id}')">⛽</button>
-      ` : ""}
-    </td>
-  `;
-  tbody.appendChild(row);
-});
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><strong>${v.id}</strong></td>
+        <td>${v.type} (${v.org})</td>
+        <td>${v.status}</td>
+        <td>${tank}</td>
+        <td>${besatzung}</td>
+        <td>
+          ${v.status === "frei" ? `
+            <button class="wartung-btn" data-id="${v.id}">🧰</button>
+            <button class="tanken-btn" data-id="${v.id}">⛽</button>
+          ` : ""}
+          ${v.org === "FF" && !this.isPersonnelAvailable(v) && !v.alarmiert ? `
+            <button class="nachalarm-button" data-id="${v.id}">📟</button>
+          ` : ""}
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
 
-table.appendChild(tbody);
-body.appendChild(table);
+    table.appendChild(tbody);
+    body.appendChild(table);
 
     header.addEventListener("click", () => body.classList.toggle("open"));
     groupDiv.appendChild(body);
     this.vehicleContainer.appendChild(groupDiv);
+  });
+
+  // Aktionen verbinden
+  document.querySelectorAll(".wartung-btn").forEach(btn => {
+    btn.addEventListener("click", () => this.wartungStart(btn.getAttribute("data-id")));
+  });
+
+  document.querySelectorAll(".tanken-btn").forEach(btn => {
+    btn.addEventListener("click", () => this.tanken(btn.getAttribute("data-id")));
+  });
+
+  document.querySelectorAll(".nachalarm-button").forEach(btn => {
+    btn.addEventListener("click", () => this.nachalarmieren(btn.getAttribute("data-id")));
   });
 
   this.renderStadtStatistik();

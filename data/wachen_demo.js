@@ -1,0 +1,40 @@
+window.WACHEN = [
+  {
+    stadt: "Demostadt",
+    name: "Wache Demostadt BF",
+    typ: "BF",
+    fahrzeuge: [
+      "FR", "FR",
+      "HLF", "HLF",
+      "LF", "LF",
+      "TLF", "TLF",
+      "DLK", "DLK",
+      "RW", "RW",
+      "KEF", "KEF",
+      "SW", "SW",
+      "MZF", "MZF",
+      "PKW", "PKW",
+      "MTF", "MTF",
+      "RTW", "RTW",
+      "NEF", "NEF",
+      "ELW", "ELW",
+      "KTW", "KTW",
+      "ABC", "ABC",
+      "Kdow", "Kdow",
+      "KLF", "KLF",
+      "Logistik", "Logistik",
+      "MTW", "MTW",
+      "GW-W", "GW-W",
+      "Sandsack", "Sandsack",
+      "V-Dekon", "V-Dekon",
+      "Boot", "Boot",
+      "Nachschub", "Nachschub",
+      "Mulde", "Mulde",
+      "AB-Gefahrgut", "AB-Gefahrgut",
+      "Hochvolt", "Hochvolt",
+      "Sirene", "Sirene",
+      "AB-Einsatzleitung", "AB-Einsatzleitung",
+      "Ölschaden", "Ölschaden"
+    ]
+  }
+];
