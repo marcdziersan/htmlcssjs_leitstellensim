@@ -1,6 +1,8 @@
+const ZEITFAKTOR = 0.1; // 0.1 = 10x schneller (600s → 60s)
+
 class Leitstelle {
   constructor() {
-    this.ANNUAL_INCIDENTS = 16000;
+    this.ANNUAL_INCIDENTS = 175200;
 this.HOURS_PER_YEAR   = 365 * 24;
 this.RATE_PER_HOUR    = this.ANNUAL_INCIDENTS / this.HOURS_PER_YEAR;
 this.WINDOW_MINUTES   = 15;
@@ -109,11 +111,13 @@ generateIncident() {
     stadt,
     required: [...template.required],
     assigned: [],
-    duration: 10 + Math.floor(Math.random() * 10), // in Sekunden
+    duration: Math.floor((template.duration || 600) * ZEITFAKTOR),
     priority: template.priority,
     active:   true,
-    startTime: now                             // merken, wann Einsatz begonnen hat
+    startTime: now,
+    arrivalTime: null,
   });
+  console.log(`🆕 Neuer Einsatz: ${template.title} (${stadt}) – Dauer: ${template.duration || 600}s`);
 
   // 5) UI aktualisieren
   this.renderIncidents();
@@ -200,15 +204,17 @@ assignVehicle(incident) {
         this.renderIncidents();
 
         if (incident.required.every(r => incident.assigned.includes(r))) {
-          setTimeout(() => {
-            incident.active = false;
-            const basePoints = { 1: 15, 2: 10, 3: 5 };
-            this.score += basePoints[incident.priority] || 10;
-            this.scoreDisplay.textContent = `Punkte: ${this.score}`;
-            this.addToHistory(incident);
-            this.renderIncidents();
-          }, (incident.duration + delay / 1000) * 1000);
-        }
+  incident.arrivalTime = Date.now(); // Startpunkt für Timer
+
+  setTimeout(() => {
+    incident.active = false;
+    const basePoints = { 1: 15, 2: 10, 3: 5 };
+    this.score += basePoints[incident.priority] || 10;
+    this.scoreDisplay.textContent = `Punkte: ${this.score}`;
+    this.addToHistory(incident);
+    this.renderIncidents();
+  }, incident.duration * 1000);
+}
 
         return;
       }
@@ -420,24 +426,26 @@ renderIncidents() {
       div.querySelector("button").onclick = () => this.assignVehicle(incident);
       const timerEl = div.querySelector(".incident-timer");
 
-      if (missing.length === 0) {
-        const totalMs = incident.duration * 1000;
-        const endTime = incident.startTime + totalMs;
+      if (missing.length === 0 && incident.arrivalTime) {
+  const totalMs = incident.duration * 1000;
+  const endTime = incident.arrivalTime + totalMs;
 
-        // Deklariere intervalId VOR dem ersten Aufruf von updateTimer
-        let intervalId;
+  let intervalId;
 
-        const updateTimer = () => {
-          const now    = Date.now();
-          const msLeft = Math.max(0, endTime - now);
-          const sec    = Math.ceil(msLeft / 1000);
-          timerEl.textContent = `⏱ Läuft noch: ${sec}s`;
-          if (msLeft <= 0) clearInterval(intervalId);
-        };
+  const updateTimer = () => {
+    const now = Date.now();
+    const msLeft = Math.max(0, endTime - now);
+    const sec = Math.ceil(msLeft / 1000);
+    timerEl.textContent = `⏱ Läuft noch: ${sec}s`;
+    if (msLeft <= 0) clearInterval(intervalId);
+  };
 
-        updateTimer();
-        intervalId = setInterval(updateTimer, 500);
-      }
+  updateTimer();
+  intervalId = setInterval(updateTimer, 500);
+
+} else {
+  timerEl.textContent = `⏱ Warten auf Fahrzeugzuweisung...`;
+}
 
       this.incidentsContainer.appendChild(div);
     });
