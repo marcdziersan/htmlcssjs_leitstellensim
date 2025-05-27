@@ -85,18 +85,6 @@ leitstelle/
 
 ---
 
-## 🧩 Geplante Erweiterungen
-
-- 🗺️ Kartenintegration (Leaflet.js) für Echtortung
-- 📆 Dienstplan-Visualisierung (Tag/Nacht/Wochenplan)
-- 🧰 Fahrzeugwartung mit Statusanzeige & Sperrung
-- ⛽ Tankfüllstand mit Bedarfssimulation
-- 👨‍🚒 Einsatzleiter-Modus mit manueller Disposition
-- 🎮 Multiplayer (optional)
-- 💾 Savegame & lokale Spielstände (LocalStorage)
-
----
-
 ## 👨‍🚒 Autor
 
 **Marcus**  
