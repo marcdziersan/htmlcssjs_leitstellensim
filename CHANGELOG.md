@@ -6,6 +6,29 @@ Alle bedeutenden Änderungen am Feuerwehr-Leitstellenspiel werden in diesem Doku
 
 * —
 
+## 🆕 **Changelog – Version 1.6.0 (27.05.2025)**
+
+### ✨ **Neue Funktionen**
+
+* **Realistische Einsatzdauern**: Alle Einsatzarten (`einsatzarten.js`) enthalten jetzt realitätsnahe `duration`-Werte in Sekunden (z. B. 5–30 Minuten).
+* **Einsatz-Timer startet erst bei Fahrzeugankunft**: Die Einsatzzeit läuft nun erst, wenn **alle benötigten Fahrzeuge vor Ort sind**, nicht mehr beim Anlegen des Einsatzes.
+* **Statusanzeige vor Start**: Solange nicht alle Fahrzeuge zugewiesen sind, wird `⏱ Warten auf Fahrzeugzuweisung...` angezeigt.
+* **Erweiterte Einsatzfrequenz**: System angepasst auf **bis zu 5 Einsätze pro 15 Minuten** (über `ANNUAL_INCIDENTS = 175200`).
+
+### ⚙️ **Technische Änderungen**
+
+* Neues Feld `arrivalTime` im Einsatzobjekt eingeführt.
+* Timerlogik in `renderIncidents()` auf `arrivalTime` umgestellt.
+* Einsatzabschluss (`setTimeout`) basiert nun auf `arrivalTime`.
+* Debug-Log hinzugefügt: zeigt Einsatzdauer in der Konsole bei Generierung.
+
+### 🐛 **Fehlerbehebungen**
+
+* Einsatz-Timer läuft nicht mehr leer, wenn Fahrzeuge spät zugewiesen werden.
+* „0s Timer“-Fehler nach Inaktivität oder später Alarmierung behoben.
+
+---
+
 ## [v1.5.0] - 2025-05-27
 
 ### Added
