@@ -4,8 +4,7 @@
 Ein browserbasiertes Feuerwehr-Leitstellenspiel mit Einsatz- und Fahrzeugmanagement, visualisierten Statistiken und realistischer Schicht- & Alarmierungslogik.
 
 ---
-
-###🔥 Features
+### Features
 
     🚑 Fahrzeuge nach BF / FF (inkl. Personalverfügbarkeit & Dienstzeiten)
     📟 BOS-Pager-Simulation: FF-Alarmierung außerhalb der Dienstzeit
