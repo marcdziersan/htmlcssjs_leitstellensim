@@ -235,18 +235,32 @@ assignVehicle(incident) {
   }
 
   addToHistory(incident) {
-    this.history.push({
-      time: new Date().toLocaleTimeString(),
-      title: incident.title,
-      stadt: incident.stadt,
-      vehicles: [...incident.assigned]
-    });
+const vehicleInfos = incident.assigned.map(type => {
+  const v = this.vehicles.find(v =>
+    v.type === type && incident.stadt === v.stadt && v.status !== "frei"
+  ) || this.vehicles.find(v => v.type === type && v.status !== "frei");
+
+  return v ? `${v.id} (${v.stadt})` : type;
+});
+
+this.history.push({
+  time: new Date().toLocaleTimeString(),
+  title: incident.title,
+  stadt: incident.stadt,
+  vehicles: vehicleInfos
+});
+
     this.renderHistory();
   }
 
 renderVehicles() {
   const now = Date.now();
   const searchTerm = document.getElementById("vehicleSearch")?.value?.toLowerCase() || "";
+  const offeneStädte = new Set();
+document.querySelectorAll(".accordion-body.open").forEach(body => {
+  const stadt = body.getAttribute("data-stadt");
+  if (stadt) offeneStädte.add(stadt);
+});
   this.vehicleContainer.innerHTML = "";
 
   const grouped = {};
@@ -277,79 +291,56 @@ renderVehicles() {
     header.textContent = `${stadt} – ${available} / ${total}`;
     groupDiv.appendChild(header);
 
-    const body = document.createElement("div");
-    body.className = "accordion-body";
+const body = document.createElement("div");
+body.className = "accordion-body";
+body.setAttribute("data-stadt", stadt);
 
-    filtered.forEach(v => {
-      const div = document.createElement("div");
-      div.className = "vehicle";
-      if (v.status !== "frei") div.classList.add("busy");
-      if (v.alarmiert) div.classList.add("alarmiert");
-      if (v.status === "wartung") div.classList.add("wartung");
+if (offeneStädte.has(stadt)) {
+  body.classList.add("open");
+}
 
-      let extra = "";
+const table = document.createElement("table");
+table.className = "vehicle-table";
 
-      // 📟 Alarmierung läuft
-      if (v.alarmiert) {
-        extra += `<br><small>📟 Alarmierung läuft...</small>`;
-      }
+const thead = document.createElement("thead");
+thead.innerHTML = `
+  <tr>
+    <th>ID</th>
+    <th>Typ</th>
+    <th>Status</th>
+    <th>Tank</th>
+    <th>Besatzung</th>
+    <th>Aktion</th>
+  </tr>`;
+table.appendChild(thead);
 
-      // 🔧 Wartung
-      if (v.status === "wartung") {
-        extra += `<br><small>🔧 In Wartung...</small>`;
-      }
+const tbody = document.createElement("tbody");
 
-      // 🕒 Einsatzfortschritt
-      if (v.status === "busy" && v.busyUntil) {
-        const msLeft = Math.max(0, v.busyUntil - now);
-        const secLeft = Math.ceil(msLeft / 1000);
-        const totalMs = (v.busyUntil - (v.startBusyTime || (now - msLeft)));
-        const pctDone = Math.min(100, ((totalMs - msLeft) / totalMs) * 100);
+filtered.forEach(v => {
+  const tank = typeof v.tankstand !== "undefined" ? `${v.tankstand}%` : "-";
+  const besatzung = this.isPersonnelAvailable(v)
+    ? "👨‍🚒 verfügbar"
+    : "<span class='no-personnel'>❌ fehlt</span>";
 
-        extra += `
-          <br><small>🕒 Frei in: ${secLeft}s</small>
-          <div class="progress">
-            <div class="bar" style="width: ${pctDone}%;"></div>
-          </div>
-        `;
-      }
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td><strong>${v.id}</strong></td>
+    <td>${v.type} (${v.org})</td>
+    <td>${v.status}</td>
+    <td>${tank}</td>
+    <td>${besatzung}</td>
+    <td>
+      ${v.status === "frei" ? `
+        <button onclick="app.wartungStart('${v.id}')">🧰</button>
+        <button onclick="app.tanken('${v.id}')">⛽</button>
+      ` : ""}
+    </td>
+  `;
+  tbody.appendChild(row);
+});
 
-      // ⛽ Tankanzeige
-      if (typeof v.tankstand !== "undefined") {
-        const tank = v.tankstand;
-        const tankColor = tank < 20 ? "#f44336" : tank < 50 ? "#ffa500" : "#4caf50";
-        extra += `
-          <br><small>⛽ Tank: ${tank}%</small>
-          <div class="progress tank">
-            <div class="bar" style="width: ${tank}%; background-color: ${tankColor}"></div>
-          </div>
-        `;
-      }
-
-      // Buttons
-      let buttons = "";
-
-      if (v.status === "frei") {
-        buttons += `
-          <button onclick="app.wartungStart('${v.id}')">🧰 Zur Wartung</button>
-          <button onclick="app.tanken('${v.id}')">⛽ Tanken</button>
-        `;
-      }
-
-      div.innerHTML = `
-        <strong>${v.id}</strong><br>
-        Typ: ${v.type} (${v.org})<br>
-        Wache: ${v.wache}<br>
-        Status: ${v.status}${extra}<br>
-        ${
-          this.isPersonnelAvailable(v)
-            ? "👨‍🚒 Personal verfügbar"
-            : "<span class='no-personnel'>❌ Keine Besatzung</span>"
-        }
-        <br>${buttons}
-      `;
-      body.appendChild(div);
-    });
+table.appendChild(tbody);
+body.appendChild(table);
 
     header.addEventListener("click", () => body.classList.toggle("open"));
     groupDiv.appendChild(body);
@@ -461,12 +452,12 @@ renderIncidents() {
     this.history.slice(-10).reverse().forEach(h => {
       const div = document.createElement("div");
       div.className = "incident";
-      div.innerHTML = `
-        <strong>${h.title}</strong><br>
-        Ort: ${h.stadt}<br>
-        Fahrzeuge: ${h.vehicles.join(", ")}<br>
-        Zeit: ${h.time}
-      `;
+div.innerHTML = `
+  <strong>${h.title}</strong><br>
+  Ort: ${h.stadt}<br>
+  Fahrzeuge: ${h.vehicles.join(", ")}<br>
+  Zeit: ${h.time}
+`;
       this.historyContainer.appendChild(div);
     });
   }
